@@ -22,6 +22,7 @@ by <정문식> ruseel@gmail.com
 ============
 http://github.com/ruseel/kr-etax-sample
 
+Maven으로 패키지를 구성해 놓았기에 git clone한 후에 mvn eclipse:eclipse를 실행하면 eclipse에서 Project를 import할 수 있고 dependancy가 걸린 라이브러리를 한 번에 다운로드 받아두어 소스코드를 보거나 실행하기에 편하다. 
 
 개요
 ===
@@ -78,12 +79,12 @@ KeyStore.load(inputstream, password)를 호출하고 나서 KeyStore.getKey(alia
 세금계산서XML에 전자서명하기 
 -----------------------------
 
-이렇게 얻은 PrivateKey와 X509Certificate를 가지고 XML에 Apache Saturiano(xmlsec)을 이용해 전자서명을 한다. xmlsec이 아니라 JDK에 내장된 JSR105(Java XML Digitial Signature API)를 쓸 수도 있을 듯 하다. 하지만 필자가 직접 사용해본 xmlsec만 샘플을 만들어 두었다. 
+이렇게 얻은 PrivateKey와 X509Certificate를 가지고 XML에 Apache Saturiano(xmlsec)을 이용해 전자서명을 한다. xmlsec이 아니라 JDK에 내장된 JSR105(Java XML Digitial Signature API)를 쓸 수도 있을 듯 하다. 하지만 필자가 직접 사용해 본 xmlsec의 샘플을 만들어 두었다. 
 
 
 이 샘플은 2048bit 공인인증서를 내보내기한 p12파일을 이용해야만 가능하도록 코딩되어 있다. (다시말해 Digest알고리즘으로 SHA256을 사용한다.)
 
-SignXML에 4개의 인자를 이런 순서로 주고 <p12 파일이름>, <p12파일의 비번>, <서명되기전의 전자세금계산서 XML path>, <서명된 전자세금계산서 path> 실행하고 나서 결과파일을 taxcerti.org의 단위기능별검증 >> 전자세금계산서 >> 2048비트 인증서로 서명된 전자세금계산서 업로드 >> 다음단계를 하고나면 모두 통과하는 것을 볼 수 있다. 
+SignXML에 4개의 인자를 이런 순서로 주고 <파일이름 p12>, <파일비번 p12>, <서명되기전의 전자세금계산서 XML path>, <서명된 전자세금계산서 path> 실행하고 나서 결과파일을 taxcerti.org의 단위기능별검증 >> 전자세금계산서 >> 2048비트 인증서로 서명된 전자세금계산서 업로드 >> 다음단계를 하고나면 모두 통과하는 것을 볼 수 있다. 
 
 <서명되기전의 전자세금계산서 XML path>로 쓸 샘플 XML을 github의 src/main/resources/unsigned.xml에 넣었으니 이 파일을 사용해서 먼저 서명방법을 익히는 것이 좋겠다. 실수로 1024bit 인증서로 서명을 한다면 TC-TX-5003, TC-TX-7776이 실패한다. 조심할 것.
 
@@ -124,11 +125,13 @@ XMLUtils.outputDOMc14nWithComments(doc, os);
 ```
 
 
+document를 String으로 변환할 때 indent가 생기는 변환법을 쓰면 서명검증이 당연하게 실패한다. indent를 넣으면서 변하기 때문이다. 굳이 C14N을 할 필요는 없지만 여기서는 한 줄로 이용할 수 있는 outputDOMc14nWithComments를 사용하였다.
+
 Rvalue를 PKCS#12에서 꺼내기 
 -----------------------------
 "전자세금계산서 개발지침"에서 "패키징/암호화"리고 지칭된 부분을 구현하려면 PrivateKey 포맷인 PKCS#8에서 특정 Attribute(PKCS#8의 용어)를 가져와야 한다. 
 
-공개하기에는 완성도가 낮아 많이 부끄러운 코드이다. 단위기능 검증만을 통과하기 위해 rvalue를 얻어보고 싶었고, 딱 그렇게만 동작하지만 누군가에게 도움이 될 거라고 생각한다. 
+공개하기에는 완성도가 낮아 많이 부끄러운 코드이다. 단위기능 검증만을 통과하기 위해 rvalue를 얻어보고 싶었고, 딱 그렇게만 동작한다. 누군가에게는 도움이 될 거라 생각해서 공개한다. 
 
 Bouncy Castle의 JDKPKCS12KeyStore.java에서 일부분을 바꿔서 PKCS#8 안의 Rvalue attribute를 저장한다. 
 
@@ -333,7 +336,7 @@ ResourceResolver.register(new ResolverOwnerDocumentUserData(), false);
 
 2012년 9월 17일 github에 올려놓은 코드를 이용해서 taxcerti.org의 단위검증을 통과하는 것을 확인하였다. 구현하면서 답답한 어느 순간에 이 글과 코드가 도움이 되었으면 하는 바램이다.
 
-어떤 조언, 희망, 개선사항이라도 이메일로 보내주시면 감사하겠다.
+어떤 조언, 희망, 개선사항이라도 이메일이나 Pull Request를 보내주시면 감사하겠다.
 
 
 FAQ
